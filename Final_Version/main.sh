@@ -43,6 +43,31 @@ for fichier_pdf in "$DOSSIER_PDF"/*.pdf; do
     fi
 
     echo "Fichier $fichier_pdf converti avec succès."
+    tmp_fichier="$fichier_txt.tmp"
+
+    awk '
+    BEGIN { count = 0 }
+    /^[[:space:]]*$/ {
+        if (count > 0) print ""
+        empty=1
+        next
+    }
+    {
+        if (count < 3) {
+            # On force un retour à la ligne après chaque ligne de l’en-tête
+            print $0
+        } else {
+            if (empty) {
+                print $0
+            } else {
+                printf "%s ", $0
+            }
+        }
+        count++
+        empty=0
+    }
+    END { print "" }
+    ' "$fichier_txt" > "$tmp_fichier" && mv "$tmp_fichier" "$fichier_txt"
 done
 
 echo "Conversion et mise en page terminées pour tous les fichiers."
